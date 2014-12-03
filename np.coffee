@@ -19,7 +19,13 @@ np = new Neopixels
 buffer = new Buffer(32 for x in [0..buff_length])
 backing = new Buffer(0 for x in [0..buff_length])
 
+ready = true
+process.on "neopixel_animation_complete", ->
+  ready = true
+
 animate = ->
+  return unless ready
+  ready = false
   status = hw.neopixel_animation_buffer buff_length, buffer
   return if status == 3
   throw new Error "SCT is already in use by "+['Inactive','PWM','Read Pulse','Neopixels'][status] if status
