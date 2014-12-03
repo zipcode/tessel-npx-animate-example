@@ -8,6 +8,13 @@ _ = require "lodash"
 pixel_count = 60
 buff_length = pixel_count * 3
 
+minmax = [{min: 0, max: 1}, {min: 0, max: 1}, {min: 0, max: 1}]
+
+calibrate = (data) ->
+  for x in [0..2]
+    minmax[x].min = Math.min minmax[x].min, data[x]
+    minmax[x].max = Math.max minmax[x].max, data[x]
+
 np = new Neopixels
 buffer = new Buffer(32 for x in [0..buff_length])
 backing = new Buffer(0 for x in [0..buff_length])
@@ -24,9 +31,10 @@ animate = ->
 interval = setInterval animate, 60
 
 pixels = (data, index) ->
-  Math.max 0, Math.min 255, Math.floor data[index] * 255
+  Math.max 0, Math.min 255, Math.floor (data[index] - minmax[index].min)/(minmax[index].max - minmax[index].min) * 255
 
 accel.on "ready", -> accel.on "data", (data) ->
+  calibrate(data)
   r = pixels(data, 0)
   g = pixels(data, 1)
   b = pixels(data, 2)
